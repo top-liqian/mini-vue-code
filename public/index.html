@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <div id="app" style="color:red;"> 
+        {{name}}   world
+        <li style="color: blue;">{{ school.name }}</li>
+        <li>{{ school.age }}</li>
+        <li>{{arr}}</li>
+    </div>
+    <script src="/dist/umd/vue.js"></script>
+    <script>
+        // 混合，混入
+        Vue.mixin({
+            created: function a() {
+                console.log('a created......')
+            }
+        })
+        Vue.mixin({
+            created: function b() {
+                console.log('b created......')
+            }
+        })
+        // [created1, created2]
+        let vm = new Vue({
+            el: '#app',
+            // mixins: [],
+            data() {
+                return {
+                    name: 'hello',
+                    msg: '222',
+                    arr: [1,2,3, { a: 1 }],
+                    school: { name: 'liqian', age: '36'}
+                }
+            },
+            // template: `<div>hello world</div>`,
+            // render() { // createElement
+            //     return h('div', {})
+            // }
+            created() { // 生命周期，就是回调函数，先订阅好，后续会触发此方法
+                console.log('my creates')
+            }
+        })
+        // console.log(vm._data.b)
+        // vm._data.b[0].a = 3
+        // console.log(vm._data.b)
+
+        // 渲染操作： 默认会先找是否具有render方法，如果没有，则找template属性。 如果没有template属性，那就看有咩有el属性，如果有，则找当前el指定的元素中的内容进行渲染
+
+        // ast解析template =》render函数
+
+        setTimeout(() => {
+            vm.school.name = 'zs' // 重新调用_render 在调用_update
+            // 数据变化 自动调用 vm._update(vm._render())就可以实现数据更新
+            // vue的更新策略是以组件为单位的，给每一个组件都增加了一个watcher，属性变化后会重新调用这个watcher（渲染watcher）
+            vm.arr.push(345)
+        
+        }, 2000)
+        
+    </script>
+</body>
+</html>
