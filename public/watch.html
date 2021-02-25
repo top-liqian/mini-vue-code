@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <script src="/dist/umd/vue.js"></script>
+    <div id="app">{{ a }}</div>
+
+    <script>
+        let vm = new Vue({
+            el: '#app',
+            data: {
+                // a: 1,
+                a: {
+                    a: 2
+                }
+            },
+            watch: {
+                // 1. 直接key，value
+                // 2. 写成key和数组的形式
+                // 3. 监控当前实例上的方法
+                // 4. handler的写法
+                // 'a'(newVal, oldval) { // 对象没有老值，只有新值
+                //     console.log('1111', newVal)
+                // }
+                'a.a': {
+                    handler: function (newVal, oldVal) {
+                        console.log('1111', newVal, oldVal)
+                    },
+                    // immediate: true, 
+                    // sync: true
+                }
+            }
+        })
+
+       
+        vm.a.a = 100 // 会触发set方法 =》 调用wacther的run方法
+        
+        setTimeout(() => {
+            vm.a.a = 200
+        })
+    </script>
+</body>
+</html>
