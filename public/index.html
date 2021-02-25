@@ -43,6 +43,9 @@
             // }
             created() { // 生命周期，就是回调函数，先订阅好，后续会触发此方法
                 console.log('my creates')
+            },
+            updated() {
+                console.log('更新了')
             }
         })
         // console.log(vm._data.b)
@@ -54,11 +57,24 @@
         // ast解析template =》render函数
 
         setTimeout(() => {
-            vm.school.name = 'zs' // 重新调用_render 在调用_update
+            // vm.school.name = 'zs' // 重新调用_render 在调用_update
             // 数据变化 自动调用 vm._update(vm._render())就可以实现数据更新
             // vue的更新策略是以组件为单位的，给每一个组件都增加了一个watcher，属性变化后会重新调用这个watcher（渲染watcher）
             vm.arr.push(345)
-        
+            vm.arr.push(345)
+            vm.arr.push(345)
+            vm.arr.push(345)
+            vm.arr.push(345)
+            vm.arr.push(345)
+            console.log(vm.$el.innerHTML)
+            // vm.arr.push(345)
+            // 上述代码会多次更新dom重新渲染，此时消耗大量的性能
+            // 批处理，去重，即vue的异步更新，更新数据后不能立刻拿到新的节点 nextTick 等待页面更新好后在获取最终的dom
+            // 如果更新数据，核心时调用wacther.update()
+            vm.$nextTick(() => {
+                // console.log('vm.$nextTick')
+                console.log('-----', vm.$el.innerHTML)
+            })
         }, 2000)
         
     </script>

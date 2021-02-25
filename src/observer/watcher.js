@@ -1,3 +1,4 @@
+import { nextTick } from "../utils"
 import { pushTarget, popTarget } from "./dep"
 
 let id = 0 // 每一个组件只有一个watcher，id用来表示watcher
@@ -34,16 +35,49 @@ class Watcher {
         this.getter() // 调用exprOrFn - vm._update(vm_render()) - 渲染页面取值（执行了get方法） - 调用rendder方法， with(vm) {}
         popTarget()
     }
+    run() {
+        this.get() // 渲染逻辑
+    }
     update() {
-        this.get() // 重新渲染
+        // 批处理，不是每次都调用get方法，get方法会重新渲染页面
+        // 把当前的wacther的get方法缓存起来
+        queueWatcher(this) // 暂存
+        // this.get() // 重新渲染
+    }
+}
+let queue = [] // 将需要更新的wacther存在一个队列当中，稍后让watcher来执行
+let has = {}
+let pending = false
+
+function flushShedulerQueue() {
+    queue.forEach(watcher => {
+        watcher.run()
+        watcher.cb()
+    })
+    queue = [] // 清空watcher队列为了下次使用
+    has = {} // 晴空标识的id
+    pending = false
+}
+
+function queueWatcher(watcher) {
+    // console.log(wacther.id)
+    // 相同的wacther就不存储来
+    const id = watcher.id // 对watcher进行去重
+    if (has[id] == null) {
+        queue.push(watcher) // 将wacther存在队列当中
+        has[id] = true
+        if (!pending) { // 如果还没有清空队列，就不要在开定时器了
+            // 等待所有同步代码执行完毕之后在执行
+            // setTimeout(() => {
+            //     queue.forEach(watcher => watcher.run())
+            //     queue = [] // 清空watcher队列为了下次使用
+            //     has = {} // 晴空标识的id
+            //     pending = false
+            // }, 0)
+            nextTick(flushShedulerQueue)
+            pending = true
+        }
     }
 }
 
 export default Watcher
-
-// 前置条件： 在数据劫持的过程中，每一个属性在定义defineProperty的时候已经给每一个属性都增加了一个dep
-
-// 1. 是把这个渲染wacther放在了Dep.target属性上
-// 2. 开始渲染，取值会调用get方法，需要让这个属性的dep存储当前的wacther
-// 3. 页面上所需要的属性都会将这个wacther放在自己的dep当中
-// 4. 等会属性更新了，就会重新调用渲染逻辑，通知自己的wacther来进行更新

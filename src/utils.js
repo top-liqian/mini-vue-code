@@ -79,3 +79,54 @@ export function mergeOptions(parent, child){
     
     return options
 }
+
+let callbacks = []
+let pending = false
+
+function flushCallbacks () {
+    while(callbacks.length) {
+        let cb = callbacks.pop()
+        cb()
+    }
+    // callbacks.forEach(cb => cb()) // 让nextTick中传入的方法依次执行
+    pending = false // 标识已经执行完毕
+    // callbacks = []
+}
+
+let timerFunc
+// 兼容处理
+if (Promise) {
+    timerFunc = () => {
+        Promise.resolve().then(flushCallbacks) // 异步处理更新
+    }
+} else if (MutationObserver) { // 可以监控dom的变化，监控完毕之后异步更新
+    let observer = new MutationObserver(flushCallbacks)
+    let textNode = document.createTextNode(1) // 创建一个文本节点
+    observer.observe(textNode, { characterData: true }) // 观测文本节点的内容
+    timerFunc = () => {
+        textNode.textContent = 2 // 文本节点内容改成2
+    }
+} else if (setImmediate) {
+    timerFunc = () => {
+        setImmediate(flushCallbacks)
+    }
+} else {
+    setTimeout(flushCallbacks)
+}
+
+
+export function nextTick(cb) {
+//   console.log('cb', cb)
+  // cb 存在两种方式，一种是更新数据时候调用的方法，还有一种是用户直接手动调用vm.$nextTick,默认我们要先更改数据在去执行用户手动添加的cb
+  callbacks.push(cb)
+  // vue3里面的nextTiock的原理就是使用的promise.then 没有做兼容性处理
+  //   Promise.resolve().then()
+  // 此处仍然做vue2的处理
+
+  // 因为内部会调用nextTick，用户也会调用，但是异步只需要一次
+  if (!pending) {
+    timerFunc() // 这个方法是异步方法，做了兼容处理
+    pending = true
+  }
+  
+}

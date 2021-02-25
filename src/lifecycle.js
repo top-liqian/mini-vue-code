@@ -23,7 +23,7 @@ export function mountComponent(vm, el) {
     // 初始化就会创建wacther
     // 这个watcher是用于渲染的，目前没有任何功能 updateComponent()
     let watcher = new Watcher(vm, updateComponent, () => {
-        callHook(vm, 'beforeUpdate' )
+        callHook(vm, 'updated' )
     }, true) // 渲染watcher只是一个名字
     // vm._update(vm._render())
 
